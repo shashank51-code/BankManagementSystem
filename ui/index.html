@@ -89,6 +89,8 @@
 
     form { display: grid; gap: 12px; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+    .toolbar input { max-width: 360px; }
     label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; font-weight: 600; }
     input, select {
       width: 100%;
@@ -138,7 +140,7 @@
         <button data-panel="operations">Operations</button>
       </nav>
       <div class="server-note">
-        Run the Java main class and use this page. All changes are saved by the Java backend in <strong>data/bank-data.ser</strong>.
+        Use this website for all banking work. Every create, deposit, withdraw, transfer, freeze, unfreeze, and statement action is saved by the Java backend in <strong>data/bank-data.ser</strong>.
       </div>
     </aside>
 
@@ -179,7 +181,10 @@
 
       <section class="panel hidden" id="accounts">
         <div class="card">
-          <h2>All Accounts</h2>
+          <div class="toolbar">
+            <h2 style="margin:0;">All Accounts</h2>
+            <input id="accountSearch" placeholder="Search by account, holder, or type">
+          </div>
           <table>
             <thead><tr><th>Account</th><th>Holder</th><th>Type</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead>
             <tbody id="accountsTable"></tbody>
@@ -254,6 +259,7 @@
                 <button class="btn primary">Load Statement</button>
               </form>
               <div id="statementResult" style="margin-top:16px;"></div>
+              <button class="btn hidden" id="downloadStatementBtn" style="margin-top:12px;">Download Statement CSV</button>
             </div>
           </div>
         </div>
@@ -265,6 +271,7 @@
 
   <script>
     const state = { accounts: [], transactions: [], summary: {} };
+    let currentStatement = null;
     const rupees = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
 
     document.querySelectorAll('.nav button').forEach(button => {
@@ -275,6 +282,8 @@
     document.getElementById('operationForm').addEventListener('submit', submitOperation);
     document.getElementById('statusForm').addEventListener('submit', submitStatus);
     document.getElementById('statementForm').addEventListener('submit', loadStatement);
+    document.getElementById('accountSearch').addEventListener('input', render);
+    document.getElementById('downloadStatementBtn').addEventListener('click', downloadStatementCsv);
     document.querySelectorAll('[data-operation]').forEach(button => {
       button.addEventListener('click', () => selectOperation(button.dataset.operation));
     });
@@ -298,9 +307,19 @@
       document.getElementById('mFrozen').textContent = state.summary.frozenAccounts || 0;
 
       renderAccounts('dashboardAccounts', state.accounts.slice(-5));
-      renderAccounts('accountsTable', state.accounts, true);
+      renderAccounts('accountsTable', filteredAccounts(), true);
       renderTransactions('dashboardTransactions', state.transactions.slice(-5).reverse(), true);
       renderTransactions('transactionsTable', state.transactions.slice().reverse());
+    }
+
+    function filteredAccounts() {
+      const query = document.getElementById('accountSearch').value.trim().toLowerCase();
+      if (!query) return state.accounts;
+      return state.accounts.filter(account =>
+        account.accountNumber.toLowerCase().includes(query)
+        || account.accountHolder.toLowerCase().includes(query)
+        || account.accountType.toLowerCase().includes(query)
+      );
     }
 
     function renderAccounts(targetId, accounts, withAction = false) {
@@ -393,7 +412,31 @@
           <tbody>${rows}</tbody>
         </table>
       `;
+      currentStatement = result;
+      document.getElementById('downloadStatementBtn').classList.remove('hidden');
       toast(result.message);
+    }
+
+    function downloadStatementCsv() {
+      if (!currentStatement) return;
+      const rows = [
+        ['Transaction ID', 'Account Number', 'Type', 'Amount', 'Balance After', 'Description'],
+        ...currentStatement.transactions.map(t => [
+          t.transactionId,
+          t.accountNumber,
+          t.type,
+          t.amount,
+          t.balanceAfter,
+          t.description
+        ])
+      ];
+      const csv = rows.map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${currentStatement.account.accountNumber}-statement.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
     }
 
     async function finish(result, form) {

@@ -28,6 +28,9 @@ RUN THE FULL-STACK WEB APP
 5. The app will start a local server and open the website.
    If port 8080 is busy, it automatically tries the next available port.
 
+IMPORTANT:
+Use the website for all banking operations. The website calls the Java backend, and the backend saves all account and transaction changes in data/bank-data.ser.
+
 
 RUN WITHOUT OPENING THE BROWSER
 -------------------------------
@@ -36,6 +39,8 @@ java -cp src BankManagementSystem --no-browser
 
 RUN THE OLD CONSOLE MENU
 ------------------------
+This mode is only for developer fallback. For normal use, work from the website.
+
 java -cp src BankManagementSystem --console
 
 
@@ -57,6 +62,7 @@ NEW ADVANCED FEATURES
 7. Clean input validation and error messages
 8. Embedded Java web server
 9. Browser dashboard connected to backend APIs
+10. Account search and CSV statement download from the website
 
 
 OPEN THE WEB UI

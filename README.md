@@ -1,6 +1,6 @@
 # Advanced Bank Management System - Java Full Stack
 
-A full-stack banking project built with Core Java, an embedded Java HTTP server, and a browser-based dashboard. Running the Java main class starts the backend, serves the frontend, and opens the website so every banking operation is reflected in both the UI and backend data store.
+A full-stack banking project built with Core Java, an embedded Java HTTP server, and a browser-based dashboard. Running the Java main class starts the backend, serves the frontend, and opens the website. Users should perform all banking work from the website; every operation is saved by the Java backend data store.
 
 ## Features
 
@@ -9,6 +9,8 @@ A full-stack banking project built with Core Java, an embedded Java HTTP server,
 - Create Savings and Current accounts
 - Deposit, withdraw, and transfer money
 - Secure balance check and mini statement with PIN verification
+- Search accounts from the website
+- Download account statement CSV from the website
 - PINs are stored as SHA-256 hashes instead of plain text
 - Persistent data storage using Java serialization
 - Account freeze and unfreeze workflow
@@ -68,6 +70,8 @@ java -cp src BankManagementSystem --no-browser
 ```
 
 ## Run The Console App
+
+Console mode is only kept as a developer fallback. The website is the main app users should use for create, deposit, withdraw, transfer, freeze, unfreeze, and statement work.
 
 ```powershell
 java -cp src BankManagementSystem --console
