@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Bank Management System</title>
+  <style>
+    :root {
+      --navy: #08172b;
+      --navy-2: #11284a;
+      --gold: #d6ae4f;
+      --cream: #f7f3eb;
+      --card: #ffffff;
+      --text: #132238;
+      --muted: #6d7684;
+      --success: #26764f;
+      --danger: #b63737;
+      --line: #e8e2d8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+    }
+
+    .layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+    .sidebar { background: var(--navy); color: #fff; padding: 28px 22px; }
+    .brand { font-size: 22px; font-weight: 700; letter-spacing: 0.2px; }
+    .brand span { color: var(--gold); }
+    .tagline { color: rgba(255,255,255,0.65); margin: 8px 0 28px; font-size: 13px; }
+    .nav button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: rgba(255,255,255,0.72);
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      text-align: left;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .nav button.active, .nav button:hover { background: rgba(214,174,79,0.18); color: var(--gold); }
+    .server-note { margin-top: 28px; padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.72); font-size: 12px; line-height: 1.5; }
+
+    main { padding: 28px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 24px; }
+    h1 { margin: 0; font-size: 28px; }
+    .subtitle { color: var(--muted); margin-top: 6px; }
+    .btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn.primary { background: var(--gold); border-color: var(--gold); color: var(--navy); }
+    .btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+    .btn:hover { filter: brightness(0.97); }
+
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(160px, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .metric, .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 10px 28px rgba(8,23,43,0.06);
+    }
+    .metric { padding: 18px; }
+    .metric label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .metric strong { display: block; margin-top: 8px; font-size: 25px; }
+
+    .grid { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 18px; align-items: start; }
+    .card { padding: 20px; margin-bottom: 18px; }
+    .card h2 { margin: 0 0 16px; font-size: 18px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: left; font-size: 14px; }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    tr:last-child td { border-bottom: 0; }
+    .badge { display: inline-flex; padding: 4px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .active-badge { background: #e5f4ec; color: var(--success); }
+    .frozen-badge { background: #f8e8e8; color: var(--danger); }
+    .credit { color: var(--success); font-weight: 700; }
+    .debit { color: var(--danger); font-weight: 700; }
+
+    form { display: grid; gap: 12px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; font-weight: 600; }
+    input, select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--text);
+      background: #fff;
+    }
+    .hidden { display: none; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: var(--navy);
+      color: #fff;
+      padding: 13px 18px;
+      border-left: 5px solid var(--gold);
+      border-radius: 12px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: 0.2s ease;
+      max-width: 420px;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { border-left-color: var(--danger); }
+
+    @media (max-width: 950px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .metrics, .grid, .form-grid { grid-template-columns: 1fr; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Advanced <span>Java Bank</span></div>
+      <div class="tagline">Frontend and backend connected through the Java web server.</div>
+      <nav class="nav">
+        <button class="active" data-panel="dashboard">Dashboard</button>
+        <button data-panel="accounts">Accounts</button>
+        <button data-panel="transactions">Transactions</button>
+        <button data-panel="operations">Operations</button>
+      </nav>
+      <div class="server-note">
+        Run the Java main class and use this page. All changes are saved by the Java backend in <strong>data/bank-data.ser</strong>.
+      </div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <div class="subtitle">Live data loaded from the Java backend API.</div>
+        </div>
+        <button class="btn primary" id="refreshBtn">Refresh Data</button>
+      </div>
+
+      <section class="metrics">
+        <div class="metric"><label>Total Accounts</label><strong id="mAccounts">0</strong></div>
+        <div class="metric"><label>Total Balance</label><strong id="mBalance">Rs. 0</strong></div>
+        <div class="metric"><label>Transactions</label><strong id="mTransactions">0</strong></div>
+        <div class="metric"><label>Frozen Accounts</label><strong id="mFrozen">0</strong></div>
+      </section>
+
+      <section class="panel" id="dashboard">
+        <div class="grid">
+          <div class="card">
+            <h2>Recent Accounts</h2>
+            <table>
+              <thead><tr><th>Account</th><th>Holder</th><th>Type</th><th>Balance</th><th>Status</th></tr></thead>
+              <tbody id="dashboardAccounts"></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <h2>Recent Transactions</h2>
+            <table>
+              <thead><tr><th>Type</th><th>Account</th><th>Amount</th></tr></thead>
+              <tbody id="dashboardTransactions"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="accounts">
+        <div class="card">
+          <h2>All Accounts</h2>
+          <table>
+            <thead><tr><th>Account</th><th>Holder</th><th>Type</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="accountsTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="transactions">
+        <div class="card">
+          <h2>Transaction History</h2>
+          <table>
+            <thead><tr><th>ID</th><th>Account</th><th>Type</th><th>Amount</th><th>Balance After</th><th>Description</th></tr></thead>
+            <tbody id="transactionsTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="operations">
+        <div class="grid">
+          <div>
+            <div class="card">
+              <h2>Create Account</h2>
+              <form id="createForm">
+                <div class="form-grid">
+                  <label>Holder Name <input name="name" required minlength="3" placeholder="Ravi Kumar"></label>
+                  <label>Account Type <select name="type"><option>Savings</option><option>Current</option></select></label>
+                  <label>Initial Deposit <input name="deposit" type="number" min="500" step="0.01" required placeholder="5000"></label>
+                  <label>4-Digit PIN <input name="pin" type="password" pattern="[0-9]{4}" maxlength="4" required placeholder="1234"></label>
+                </div>
+                <button class="btn primary">Create Account</button>
+              </form>
+            </div>
+
+            <div class="card">
+              <h2>Money Operations</h2>
+              <div class="actions">
+                <button class="btn primary" data-operation="deposit">Deposit</button>
+                <button class="btn" data-operation="withdraw">Withdraw</button>
+                <button class="btn" data-operation="transfer">Transfer</button>
+              </div>
+              <form id="operationForm" style="margin-top:16px;">
+                <input type="hidden" name="mode" value="deposit">
+                <div class="form-grid">
+                  <label id="fromLabel">Account Number <input name="accountNumber" placeholder="ACC1001"></label>
+                  <label id="toLabel" class="hidden">To Account <input name="toAccount" placeholder="ACC1002"></label>
+                  <label id="pinLabel" class="hidden">PIN <input name="pin" type="password" maxlength="4" placeholder="1234"></label>
+                  <label>Amount <input name="amount" type="number" min="1" step="0.01" required placeholder="1000"></label>
+                </div>
+                <button class="btn primary" id="operationSubmit">Deposit Money</button>
+              </form>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <h2>Account Status</h2>
+              <form id="statusForm">
+                <label>Account Number <input name="accountNumber" required placeholder="ACC1001"></label>
+                <label>PIN <input name="pin" type="password" maxlength="4" required placeholder="1234"></label>
+                <div class="actions">
+                  <button class="btn danger" name="statusAction" value="freeze">Freeze</button>
+                  <button class="btn primary" name="statusAction" value="unfreeze">Unfreeze</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card">
+              <h2>Mini Statement</h2>
+              <form id="statementForm">
+                <label>Account Number <input name="accountNumber" required placeholder="ACC1001"></label>
+                <label>PIN <input name="pin" type="password" maxlength="4" required placeholder="1234"></label>
+                <button class="btn primary">Load Statement</button>
+              </form>
+              <div id="statementResult" style="margin-top:16px;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const state = { accounts: [], transactions: [], summary: {} };
+    const rupees = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+
+    document.querySelectorAll('.nav button').forEach(button => {
+      button.addEventListener('click', () => showPanel(button.dataset.panel));
+    });
+    document.getElementById('refreshBtn').addEventListener('click', loadData);
+    document.getElementById('createForm').addEventListener('submit', createAccount);
+    document.getElementById('operationForm').addEventListener('submit', submitOperation);
+    document.getElementById('statusForm').addEventListener('submit', submitStatus);
+    document.getElementById('statementForm').addEventListener('submit', loadStatement);
+    document.querySelectorAll('[data-operation]').forEach(button => {
+      button.addEventListener('click', () => selectOperation(button.dataset.operation));
+    });
+
+    async function loadData() {
+      const [summary, accounts, transactions] = await Promise.all([
+        fetchJson('/api/summary'),
+        fetchJson('/api/accounts'),
+        fetchJson('/api/transactions')
+      ]);
+      state.summary = summary;
+      state.accounts = accounts;
+      state.transactions = transactions;
+      render();
+    }
+
+    function render() {
+      document.getElementById('mAccounts').textContent = state.summary.totalAccounts || 0;
+      document.getElementById('mBalance').textContent = rupees.format(state.summary.totalBalance || 0);
+      document.getElementById('mTransactions').textContent = state.summary.transactionCount || 0;
+      document.getElementById('mFrozen').textContent = state.summary.frozenAccounts || 0;
+
+      renderAccounts('dashboardAccounts', state.accounts.slice(-5));
+      renderAccounts('accountsTable', state.accounts, true);
+      renderTransactions('dashboardTransactions', state.transactions.slice(-5).reverse(), true);
+      renderTransactions('transactionsTable', state.transactions.slice().reverse());
+    }
+
+    function renderAccounts(targetId, accounts, withAction = false) {
+      const target = document.getElementById(targetId);
+      if (!accounts.length) {
+        target.innerHTML = `<tr><td colspan="${withAction ? 6 : 5}">No accounts found.</td></tr>`;
+        return;
+      }
+      target.innerHTML = accounts.map(account => `
+        <tr>
+          <td>${account.accountNumber}</td>
+          <td>${account.accountHolder}</td>
+          <td>${account.accountType}</td>
+          <td>${rupees.format(account.balance)}</td>
+          <td><span class="badge ${account.active ? 'active-badge' : 'frozen-badge'}">${account.active ? 'Active' : 'Frozen'}</span></td>
+          ${withAction ? `<td><button class="btn" onclick="prefillStatement('${account.accountNumber}')">Statement</button></td>` : ''}
+        </tr>
+      `).join('');
+    }
+
+    function renderTransactions(targetId, transactions, compact = false) {
+      const target = document.getElementById(targetId);
+      const colspan = compact ? 3 : 6;
+      if (!transactions.length) {
+        target.innerHTML = `<tr><td colspan="${colspan}">No transactions found.</td></tr>`;
+        return;
+      }
+      target.innerHTML = transactions.map(transaction => {
+        const credit = transaction.type === 'DEPOSIT' || transaction.type === 'TRANSFER IN' || transaction.type === 'OPENING';
+        if (compact) {
+          return `<tr><td>${transaction.type}</td><td>${transaction.accountNumber}</td><td class="${credit ? 'credit' : 'debit'}">${rupees.format(transaction.amount)}</td></tr>`;
+        }
+        return `
+          <tr>
+            <td>${transaction.transactionId}</td>
+            <td>${transaction.accountNumber}</td>
+            <td>${transaction.type}</td>
+            <td class="${credit ? 'credit' : 'debit'}">${rupees.format(transaction.amount)}</td>
+            <td>${rupees.format(transaction.balanceAfter)}</td>
+            <td>${transaction.description}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function createAccount(event) {
+      event.preventDefault();
+      const result = await postForm('/api/accounts', new FormData(event.target));
+      await finish(result, event.target);
+    }
+
+    async function submitOperation(event) {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      const mode = form.get('mode');
+      const payload = new URLSearchParams();
+      if (mode === 'transfer') {
+        payload.set('fromAccount', form.get('accountNumber'));
+        payload.set('toAccount', form.get('toAccount'));
+      } else {
+        payload.set('accountNumber', form.get('accountNumber'));
+      }
+      payload.set('pin', form.get('pin'));
+      payload.set('amount', form.get('amount'));
+      const result = await postBody(`/api/${mode}`, payload);
+      await finish(result);
+    }
+
+    async function submitStatus(event) {
+      event.preventDefault();
+      const submitter = event.submitter;
+      const result = await postForm(`/api/${submitter.value}`, new FormData(event.target));
+      await finish(result);
+    }
+
+    async function loadStatement(event) {
+      event.preventDefault();
+      const result = await postForm('/api/statement', new FormData(event.target));
+      if (!result.success) {
+        toast(result.message, true);
+        return;
+      }
+      const rows = result.transactions.length
+        ? result.transactions.slice().reverse().map(t => `<tr><td>${t.transactionId}</td><td>${t.type}</td><td>${rupees.format(t.amount)}</td><td>${rupees.format(t.balanceAfter)}</td></tr>`).join('')
+        : '<tr><td colspan="4">No transactions found.</td></tr>';
+      document.getElementById('statementResult').innerHTML = `
+        <strong>${result.account.accountHolder} (${result.account.accountNumber})</strong>
+        <table style="margin-top:10px;">
+          <thead><tr><th>ID</th><th>Type</th><th>Amount</th><th>Balance</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+      toast(result.message);
+    }
+
+    async function finish(result, form) {
+      toast(result.message, !result.success);
+      if (result.success) {
+        if (form) form.reset();
+        await loadData();
+      }
+    }
+
+    function selectOperation(mode) {
+      document.querySelector('[name="mode"]').value = mode;
+      document.getElementById('toLabel').classList.toggle('hidden', mode !== 'transfer');
+      document.getElementById('pinLabel').classList.toggle('hidden', mode === 'deposit');
+      document.getElementById('operationSubmit').textContent = {
+        deposit: 'Deposit Money',
+        withdraw: 'Withdraw Money',
+        transfer: 'Transfer Money'
+      }[mode];
+      document.querySelectorAll('[data-operation]').forEach(button => {
+        button.classList.toggle('primary', button.dataset.operation === mode);
+      });
+    }
+
+    function showPanel(panelId) {
+      document.querySelectorAll('.panel').forEach(panel => panel.classList.add('hidden'));
+      document.getElementById(panelId).classList.remove('hidden');
+      document.querySelectorAll('.nav button').forEach(button => button.classList.toggle('active', button.dataset.panel === panelId));
+      document.getElementById('pageTitle').textContent = panelId.charAt(0).toUpperCase() + panelId.slice(1);
+    }
+
+    function prefillStatement(accountNumber) {
+      showPanel('operations');
+      document.querySelector('#statementForm [name="accountNumber"]').value = accountNumber;
+      document.querySelector('#statementForm [name="pin"]').focus();
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+      return response.json();
+    }
+
+    async function postForm(url, formData) {
+      return postBody(url, new URLSearchParams(formData));
+    }
+
+    async function postBody(url, body) {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body
+      });
+      return response.json();
+    }
+
+    let toastTimer;
+    function toast(message, error = false) {
+      const element = document.getElementById('toast');
+      element.textContent = message || 'Action completed.';
+      element.classList.toggle('error', error);
+      element.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => element.classList.remove('show'), 3200);
+    }
+
+    selectOperation('deposit');
+    loadData().catch(error => toast(error.message, true));
+  </script>
+</body>
+</html>

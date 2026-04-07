@@ -1,0 +1,81 @@
+HOW TO RUN - Advanced Bank Management System
+===========================================
+
+REQUIREMENTS
+------------
+1. Java JDK 17 or above is recommended.
+2. Check Java installation:
+
+   java -version
+   javac -version
+
+
+RUN THE FULL-STACK WEB APP
+--------------------------
+1. Open PowerShell or Command Prompt.
+2. Go to the project folder:
+
+   cd "C:\Users\shash\Documents\New project\BankManagementSystem"
+
+3. Compile:
+
+   javac src\*.java
+
+4. Run:
+
+   java -cp src BankManagementSystem
+
+5. The app will start a local server and open the website.
+   If port 8080 is busy, it automatically tries the next available port.
+
+
+RUN WITHOUT OPENING THE BROWSER
+-------------------------------
+java -cp src BankManagementSystem --no-browser
+
+
+RUN THE OLD CONSOLE MENU
+------------------------
+java -cp src BankManagementSystem --console
+
+
+DEMO ACCOUNTS
+-------------
+ACC1001 - Ravi Kumar   - PIN: 1234
+ACC1002 - Priya Sharma - PIN: 5678
+ACC1003 - Kiran Rao    - PIN: 4321
+
+
+NEW ADVANCED FEATURES
+---------------------
+1. Automatic data saving in data/bank-data.ser
+2. PIN hashing with SHA-256
+3. Account freeze and unfreeze
+4. Account search
+5. Bank summary report
+6. CSV statement export in exports/
+7. Clean input validation and error messages
+8. Embedded Java web server
+9. Browser dashboard connected to backend APIs
+
+
+OPEN THE WEB UI
+---------------
+Do not open ui/index.html directly for connected mode.
+Run the Java main class and open the URL printed in the terminal, such as:
+
+http://localhost:8080/
+
+
+COMMON ERRORS
+-------------
+ERROR: 'javac' is not recognized
+FIX: Install the Java JDK and add it to PATH.
+
+ERROR: Could not find or load main class BankManagementSystem
+FIX: Run from the project root using:
+
+     java -cp src BankManagementSystem
+
+ERROR: Old saved data causes unexpected behavior
+FIX: Delete the data folder and run the app again to seed fresh demo accounts.
