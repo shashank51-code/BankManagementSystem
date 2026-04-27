@@ -98,9 +98,3 @@ These are intentionally ignored by Git:
 - `exports/`
 - IDE metadata such as `.idea/`
 
-## Suggested Next-Level Additions
-
-- Convert the console backend into a REST API using Spring Boot
-- Replace Java serialization with SQLite or MySQL
-- Add JUnit tests for banking operations
-- Add admin login and role-based access control
