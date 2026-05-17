@@ -51,47 +51,6 @@ BankManagementSystem/
 `-- .gitignore
 ```
 
-## Run The Full-Stack Web App
-
-From the project root:
-
-```powershell
-cd "C:\Users\shash\Documents\New project\BankManagementSystem"
-javac src\*.java
-java -cp src BankManagementSystem
-```
-
-The app starts on the first free port from `8080` to `8099` and opens the browser automatically.
-
-If you do not want the browser to open automatically:
-
-```powershell
-java -cp src BankManagementSystem --no-browser
-```
-
-## Run The Console App
-
-Console mode is only kept as a developer fallback. The website is the main app users should use for create, deposit, withdraw, transfer, freeze, unfreeze, and statement work.
-
-```powershell
-java -cp src BankManagementSystem --console
-```
-
-The backend automatically creates `data/bank-data.ser` when it saves bank data.
-
-## Open The Web UI
-
-Do not open `ui/index.html` directly for backend-connected mode. Start the Java app and use the URL it prints, for example:
-
-```text
-http://localhost:8080/
-```
-
-The frontend calls Java API endpoints such as `/api/accounts`, `/api/deposit`, `/api/transfer`, and `/api/statement`.
-
-## Generated Files
-
-These are intentionally ignored by Git:
 
 - `*.class`
 - `data/`
