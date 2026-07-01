@@ -1,4 +1,4 @@
-# Advanced Bank Management System - Java Full Stack
+# Basic Bank Management System
 
 A full-stack banking project built with Core Java, an embedded Java HTTP server, and a browser-based dashboard. Running the Java main class starts the backend, serves the frontend, and opens the website. Users should perform all banking work from the website; every operation is saved by the Java backend data store.
 
